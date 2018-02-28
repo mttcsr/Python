@@ -1,0 +1,52 @@
+#!/usr/bin/python
+#####################################################################
+# Author:		mtt_csr
+# Date:			28-02-2018
+# Purpose:     random sample and non linear fit
+# Source:       python
+#####################################################################
+
+import numpy as np
+import pylab as pyl
+from scipy import stats
+from scipy import signal
+from numpy import exp
+from scipy.optimize import curve_fit
+import numpy.polynomial.polynomial as poly
+import matplotlib.pyplot as plt
+
+def f_th(x, a, b, c, mu, s):
+    e=a*exp(x*b)
+    gau=c*exp(-(x-mu)**2./(2.*s))
+
+    return e+gau
+
+
+#---random data---#
+x=np.linspace(100,160,200)
+p=np.linspace(2,3,200)
+y2=np.exp(-p)
+y3=np.random.normal(0, 0.005, 200)
+y1=y2+y3+0.01
+y4= 0.05* signal.gaussian(200, 4.)
+y=y1+y4
+
+#---non linear fit---#
+init_vals = [0.3, -0.02, 0.005, 130, 5]
+par, cov = curve_fit(f_th, x, y, p0=init_vals)
+print(par)
+y_th=f_th(x, par[0], par[1], par[2], par[3], par[4])
+
+#---linear interpolation attempts---#
+#slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+#coefficients = poly.polyfit(x, y, 1)
+#y_reconstructed = poly.polyval(x, coefficients)
+
+#---plot---#
+pyl.plot(x,y,'.',label='mc data')
+pyl.plot(x,y_th,'-',label='fit')
+pyl.ylabel('adc counts')
+pyl.xlabel('E')
+pyl.title('Higgs peak simulation')
+pyl.legend()
+plt.show()
